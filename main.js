@@ -107,7 +107,7 @@
         closeForm.addEventListener('submit', closeFormSubmit);
     }
 
-    let socket = new WebSocket("ws://10.139.26.145:8920");
+    let socket = new WebSocket("ws://10.139.26.169:8920");
 
     if (!("Notification" in window)) {
         alert("Ative as notificações para ser avisado de novas mensagens nesse chat");
