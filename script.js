@@ -1,4 +1,6 @@
 (function(){
+    let user;
+
     function sendMessage(message) {
         socket.send(message);
     }
@@ -55,15 +57,18 @@
         var joinForm = document.querySelector('form.join-form');
         var msgForm = document.querySelector('form.msg-form');
         var closeForm = document.querySelector('form.close-form');
-    
+        var canvas = document.getElementById('canvas')
+
         function joinFormSubmit(event) {
             event.preventDefault();
             sender = document.getElementById('sender').value;
+
             var joinMsg = {
                 type: "join",
                 sender: sender,
                 text: sender + ' entrou no chat!'
             };
+
             sendMessage(JSON.stringify(joinMsg));
 
             var sound = new Audio('./notificacao.mp3');
@@ -72,7 +77,9 @@
             if (!joinForm.classList.contains("hidden")) {
                user = sender
             }
+        
 
+            canvas.classList.remove('hidden')
             joinForm.classList.add('hidden');
             msgForm.classList.remove('hidden');
             closeForm.classList.remove('hidden');
@@ -109,6 +116,77 @@
 
     let socket = new WebSocket("ws://10.139.26.169:8920");
 
+    // Obtém o elemento canvas e seu contexto 2d
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+
+    // Define a largura da linha e a cor inicial
+    var lineWidth = 5;
+    var strokeColor = '#000';
+
+    // Define a variável para verificar se o mouse está pressionado
+    var isDrawing = false;
+
+    // Função para desenhar no canvas
+    function draw(e) {
+        if (!isDrawing) return; // Pare se o mouse não estiver pressionado
+
+        // Obter a posição atual do mouse
+        var x = e.clientX - canvas.offsetLeft;
+        var y = e.clientY - canvas.offsetTop;
+
+        // Define a largura da linha e a cor
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = strokeColor;
+        ctx.lineJoin = ctx.lineCap = 'round'; // Define o estilo de junção e fim da linha para suavizar os cantos
+
+        // Desenha uma linha até a posição atual do mouse
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    }
+
+    // Inicia o desenho quando o mouse é pressionado
+    canvas.addEventListener('mousedown', function (e) {
+        isDrawing = true;
+        // Inicia um novo caminho
+        ctx.beginPath();
+        // Obter a posição atual do mouse
+        var x = e.clientX - canvas.offsetLeft;
+        var y = e.clientY - canvas.offsetTop;
+        // Move para a posição atual do mouse
+        ctx.moveTo(x, y);
+    });
+
+    // Continua o desenho quando o mouse é movido
+    canvas.addEventListener('mousemove', draw);
+
+    // Termina o desenho quando o mouse é solto
+    canvas.addEventListener('mouseup', function () {
+        isDrawing = false;
+    });
+    
+    setInterval(() => {
+        console.log(user)
+    }, 2000);
+
+    // Limpa o canvas
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Alterna entre diferentes cores
+    function changeColor(color) {
+        strokeColor = color;
+    }
+
+    // Alterna entre diferentes larguras de linha
+    function changeWidth(width) {
+        lineWidth = width;
+    }
+
+
+
+
     if (!("Notification" in window)) {
         alert("Ative as notificações para ser avisado de novas mensagens nesse chat");
       } else if (Notification.permission !== 'denied') {
@@ -121,7 +199,6 @@
         });
     }
 
-    let user;
     var socketOpen = (e) => {
         console.log("connected to the socket");
         var msg = {
@@ -179,5 +256,7 @@
     socket.addEventListener("message", socketMessage);
     socket.addEventListener("close", socketClose);
     socket.addEventListener("error", socketError);
+
+    
    
 })();

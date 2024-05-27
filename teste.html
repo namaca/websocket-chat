@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canvas Drawing</title>
+<style>
+    canvas {
+        border: 1px solid #000;
+    }
+</style>
+</head>
+<body>
+<canvas id="myCanvas" width="800" height="600"></canvas>
+
+<script>
+    // Obtém o elemento canvas e seu contexto 2d
+    var canvas = document.getElementById('myCanvas');
+    var ctx = canvas.getContext('2d');
+
+    // Define a largura da linha e a cor inicial
+    var lineWidth = 5;
+    var strokeColor = '#000';
+
+    // Define a variável para verificar se o mouse está pressionado
+    var isDrawing = false;
+
+    // Função para desenhar no canvas
+    function draw(e) {
+        if (!isDrawing) return; // Pare se o mouse não estiver pressionado
+
+        // Obter a posição atual do mouse
+        var x = e.clientX - canvas.offsetLeft;
+        var y = e.clientY - canvas.offsetTop;
+
+        // Define a largura da linha e a cor
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = strokeColor;
+        ctx.lineJoin = ctx.lineCap = 'round'; // Define o estilo de junção e fim da linha para suavizar os cantos
+
+        // Desenha uma linha até a posição atual do mouse
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    }
+
+    // Inicia o desenho quando o mouse é pressionado
+    canvas.addEventListener('mousedown', function (e) {
+        isDrawing = true;
+        // Inicia um novo caminho
+        ctx.beginPath();
+        // Obter a posição atual do mouse
+        var x = e.clientX - canvas.offsetLeft;
+        var y = e.clientY - canvas.offsetTop;
+        // Move para a posição atual do mouse
+        ctx.moveTo(x, y);
+    });
+
+    // Continua o desenho quando o mouse é movido
+    canvas.addEventListener('mousemove', draw);
+
+    // Termina o desenho quando o mouse é solto
+    canvas.addEventListener('mouseup', function () {
+        isDrawing = false;
+    });
+
+    // Limpa o canvas
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Alterna entre diferentes cores
+    function changeColor(color) {
+        strokeColor = color;
+    }
+
+    // Alterna entre diferentes larguras de linha
+    function changeWidth(width) {
+        lineWidth = width;
+    }
+</script>
+
+<!-- Botões para limpar o canvas, alterar cor e largura da linha -->
+<button onclick="clearCanvas()">Limpar</button>
+<button onclick="changeColor('#000')">Preto</button>
+<button onclick="changeColor('#FF0000')">Vermelho</button>
+<button onclick="changeColor('#00FF00')">Verde</button>
+<button onclick="changeColor('#0000FF')">Azul</button>
+<br>
+<button onclick="changeWidth(5)">Largura 5</button>
+<button onclick="changeWidth(10)">Largura 10</button>
+<button onclick="changeWidth(15)">Largura 15</button>
+
+</body>
+</html>

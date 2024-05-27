@@ -5,10 +5,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container" style="gap: 40px;">
         <div class="chat-box">
             <div class="messages"></div>
             <form action="" class="join-form">
@@ -23,7 +23,9 @@
                 <button type="submit">Sair do Chat</button>
             </form>
         </div>
+
+        <canvas id="canvas" width="800" height="600" style="border:1px solid black" class="hidden canvas"></canvas>
     </div>
-    <script src="main.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
