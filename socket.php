@@ -1,6 +1,6 @@
 <?php
 
-$address = '10.139.26.169';
+$address = '10.139.26.167';
 $port = 8920;
 $null = NULL;
 
@@ -53,6 +53,25 @@ while(true) {
                             'connection' => $value
                         ];
                     }
+                    $maskedMessage = pack_data($message);
+                    foreach ($members as $mkey => $mvalue) {
+                        socket_write($mvalue['connection'], $maskedMessage, strlen($maskedMessage));
+                    }
+                }
+               
+                if($decoded_message['type'] === 'draw') {
+                    $maskedMessage = pack_data($message);
+                    foreach ($members as $mkey => $mvalue) {
+                        socket_write($mvalue['connection'], $maskedMessage, strlen($maskedMessage));
+                    }
+                }
+                if($decoded_message['type'] === 'mouseup') {
+                    $maskedMessage = pack_data($message);
+                    foreach ($members as $mkey => $mvalue) {
+                        socket_write($mvalue['connection'], $maskedMessage, strlen($maskedMessage));
+                    }
+                }
+                if($decoded_message['type'] === 'clear') {
                     $maskedMessage = pack_data($message);
                     foreach ($members as $mkey => $mvalue) {
                         socket_write($mvalue['connection'], $maskedMessage, strlen($maskedMessage));

@@ -27,8 +27,15 @@ input {
     padding: 5px;
     margin: 5px 0;
 }
-
-button {
+#toolbar{
+    border: 1px solid black;
+    height: 600px;
+    width: 60px;
+}
+#toolbar > button{
+    height: 30px;
+}
+form button {
     display: block;
     background: rgb(39, 112, 215);
     padding: 5px;
@@ -40,6 +47,7 @@ button {
     cursor: pointer;
     color: white;
 }
+
 form.msg-form {
     bottom: 1em;
     right: 1em;

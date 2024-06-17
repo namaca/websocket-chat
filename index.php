@@ -22,10 +22,18 @@
             <form action="" class="close-form hidden"> 
                 <button type="submit">Sair do Chat</button>
             </form>
+            
         </div>
 
         <canvas id="canvas" width="800" height="600" style="border:1px solid black" class="hidden canvas"></canvas>
+        <div id="toolbar" class="hidden">
+            <button>Cor</button>
+            <button>Tamn</button>
+            <button id="eraser-btn" class="hidden">Borracha</button>
+            <button id="clear-btn" class="hidden">Apagar</button>
+        </div>
     </div>
+    
     <script src="script.js"></script>
 </body>
 </html>

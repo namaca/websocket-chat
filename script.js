@@ -1,5 +1,8 @@
 (function(){
     let user;
+    let drawer = 'caua';
+    let lastX;
+    let lastY;
 
     function sendMessage(message) {
         socket.send(message);
@@ -83,6 +86,8 @@
             joinForm.classList.add('hidden');
             msgForm.classList.remove('hidden');
             closeForm.classList.remove('hidden');
+
+            novoDrawer()
         }
     
         joinForm.addEventListener('submit', joinFormSubmit);
@@ -92,6 +97,7 @@
             var msgField, msgText, msg;
             msgField = document.getElementById('msg');
             msgText = msgField.value;
+
             msg = {
                 type: "normal",
                 sender: sender,
@@ -107,6 +113,14 @@
 
         function closeFormSubmit(event) {
             event.preventDefault();
+            clearCanvas();
+
+            clearMsg = {
+                'type': 'clear',
+                'drawer': user
+            }
+
+            sendMessage(JSON.stringify(clearMsg))
             socket.close();
             window.location.reload();
         }
@@ -114,7 +128,7 @@
         closeForm.addEventListener('submit', closeFormSubmit);
     }
 
-    let socket = new WebSocket("ws://10.139.26.169:8920");
+    let socket = new WebSocket("ws://10.139.26.167:8920");
 
     // Obtém o elemento canvas e seu contexto 2d
     var canvas = document.getElementById('canvas');
@@ -127,10 +141,14 @@
     // Define a variável para verificar se o mouse está pressionado
     var isDrawing = false;
 
+    
+
     // Função para desenhar no canvas
     function draw(e) {
         if (!isDrawing) return; // Pare se o mouse não estiver pressionado
-
+        if(drawer!==user){
+            return;
+        }
         // Obter a posição atual do mouse
         var x = e.clientX - canvas.offsetLeft;
         var y = e.clientY - canvas.offsetTop;
@@ -143,10 +161,46 @@
         // Desenha uma linha até a posição atual do mouse
         ctx.lineTo(x, y);
         ctx.stroke();
+
+        var drawMsg = {
+            type: "draw",
+            drawer: drawer,
+            clientX: e.clientX,
+            clientY: e.clientY,
+            strokeColor: strokeColor
+        };
+
+        sendMessage(JSON.stringify(drawMsg));
     }
 
+    function changeToEraser() {
+        console.log('Borracha ativada')
+        strokeColor = '#FFFFFF'; // Define a cor branca para simular uma borracha
+    }
+
+    function drawLine(prevX, prevY, currX, currY,color) {
+        // Define a largura da linha e a cor
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = color;
+        ctx.lineJoin = ctx.lineCap = 'round'; // Define o estilo de junção e fim da linha para suavizar os cantos
+    
+        // Começa o caminho da linha
+        ctx.beginPath();
+        // Move para a posição anterior
+        ctx.moveTo(prevX - canvas.offsetLeft, prevY - canvas.offsetTop);
+        // Desenha a linha até a posição atual
+        ctx.lineTo(currX - canvas.offsetLeft, currY - canvas.offsetTop);
+        // Desenha a linha no canvas
+        ctx.stroke();
+        // Finaliza o caminho
+        ctx.closePath();
+    }
     // Inicia o desenho quando o mouse é pressionado
     canvas.addEventListener('mousedown', function (e) {
+        if(drawer!==user){
+            return;
+        }
+
         isDrawing = true;
         // Inicia um novo caminho
         ctx.beginPath();
@@ -162,12 +216,63 @@
 
     // Termina o desenho quando o mouse é solto
     canvas.addEventListener('mouseup', function () {
+        if(drawer!==user){
+            return;
+        }
         isDrawing = false;
+
+        mouseUpMsg = {
+            "type": 'mouseup',
+            "drawer": user
+        }
+        sendMessage(JSON.stringify(mouseUpMsg));
     });
     
     setInterval(() => {
-        console.log(user)
-    }, 2000);
+        if(!(user === undefined)){
+            console.log(user)
+            ping = {
+                "msg": 'ping',
+                "sender": user
+            }
+            sendMessage(JSON.stringify(ping));
+        }
+    }, 10000);
+
+    function novoDrawer() {
+        if(drawer == user){
+            document.getElementById('eraser-btn').classList.remove('hidden')
+            document.getElementById('clear-btn').classList.remove('hidden')
+            document.getElementById('toolbar').classList.remove('hidden')
+
+            document.getElementById('toolbar').style.display = 'flex'
+            document.getElementById('toolbar').style['flex-direction'] = 'column'
+            document.getElementById('toolbar').style.gap = '20px'
+
+            document.getElementById('eraser-btn').addEventListener('click', function() {
+                changeToEraser();
+            });
+            
+            // Evento de clique no botão de apagar
+            document.getElementById('clear-btn').addEventListener('click', function() {
+                clearCanvas();
+
+                clearMsg = {
+                    'type': 'clear',
+                    'drawer': user
+                }
+
+                sendMessage(JSON.stringify(clearMsg))
+            });
+        } else {
+            document.getElementById('eraser-btn').removeEventListener('click');
+            document.getElementById('clear-btn').removeEventListener('click');
+
+            document.getElementById('eraser-btn').classList.add('hidden')
+            document.getElementById('clear-btn').classList.add('hidden')
+            document.getElementById('toolbar').classList.add('hidden')
+        }
+    }
 
     // Limpa o canvas
     function clearCanvas() {
@@ -222,6 +327,53 @@
             }
             
         }
+        if(JSON.parse(e.data).type === "match-start"){
+            drawer = JSON.parse(e.data).drawer;
+            if(drawer == user){
+                return alert('Comece a desenhar')
+            }
+        }
+        if(JSON.parse(e.data).type === "draw"){
+            drawer = JSON.parse(e.data).drawer;
+            if(drawer !== user){
+                //pinte no quadro de acordo com o x e y que vao vir de JSON.parse(e.data).clientX e JSON.parse(e.data).clientY
+                if(!lastX || !lastY){
+                    lastX = JSON.parse(e.data).clientX;
+                    lastY = JSON.parse(e.data).clientY;
+                }
+
+                //drawBall(JSON.parse(e.data).clientX, JSON.parse(e.data).clientY)
+                console.log(lastX)
+                drawLine(lastX,lastY,JSON.parse(e.data).clientX,JSON.parse(e.data).clientY,JSON.parse(e.data).strokeColor)
+                lastX = JSON.parse(e.data).clientX;
+                lastY = JSON.parse(e.data).clientY;
+
+                return;
+            }
+            return;
+        }
+        if(JSON.parse(e.data).type === "mouseup"){
+            drawer = JSON.parse(e.data).drawer;
+            if(drawer !== user){
+                console.log('PAROU')
+                lastX = null;
+                lastY = null;
+
+                return;
+            }
+            return;
+        }
+
+        if(JSON.parse(e.data).type === "clear"){
+            drawer = JSON.parse(e.data).drawer;
+            if(drawer !== user){
+                clearCanvas()
+
+                return;
+            }
+            return;
+        }
+
         appendMessage(e.data);
     }
 
